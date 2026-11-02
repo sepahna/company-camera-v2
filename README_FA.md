@@ -1,28 +1,24 @@
-# Company Camera
+# Company Camera – Commercial Compose Edition
 
-اپ اندرویدی آفلاین برای ثبت و آرشیو عکس‌های کاری.
+نسخه بازطراحی‌شده با Kotlin، Jetpack Compose، Material 3 و معماری MVVM.
 
-## امکانات
-- انتخاب دسته‌بندی «ماشین‌آلات» یا «نفرات» و ذخیره در پوشه‌های `MACHINERY` و `PERSONNEL`
-- ثبت نام دلخواه برای عکس‌ها با پسوند JPG
-- آرشیو بندانگشتی، نمایش بزرگ عکس و جست‌وجوی نام فایل
-- پشتیبان‌گیری و بازیابی JSON و ZIP
-- راهنمای درون‌برنامه‌ای شامل مسیر پوشه‌ها
+## امکانات حفظ‌شده
+- ثبت عکس با CameraX و انتخاب دسته ماشین‌آلات/نفرات
+- ذخیره فایل‌ها در PHOTOS/MACHINERY و PHOTOS/PERSONNEL
+- ثبت نام و توضیحات عکس
+- آرشیو با نمایش نام فایل و آیکون مشاهده؛ تصویر اصلی فقط هنگام بازکردن خوانده می‌شود
+- جست‌وجوی نام فایل
+- خروجی و بازیابی JSON و ZIP
+- راهنمای مسیرهای ذخیره‌سازی
 
-## مسیر ذخیره‌سازی
-عکس‌ها در فضای اختصاصی برنامه و در مسیر زیر ذخیره می‌شوند:
-`Android/data/ir.mbarani.companycamera/files/Pictures/CompanyCamera/PHOTOS/`
+## معماری
+- UI: Jetpack Compose + Material 3
+- State: AndroidX ViewModel + StateFlow
+- Data: Room DAO + Repository
+- Camera: CameraX
+- Image viewer: Coil
 
-پوشه‌های دسته‌بندی:
-- `MACHINERY`
-- `PERSONNEL`
+## ساخت APK
+Workflow در `.github/workflows/build-apk.yml` با GitHub Actions قابل اجراست.
 
-پشتیبان‌های داخلی در:
-`Android/data/ir.mbarani.companycamera/files/Pictures/CompanyCamera/BACKUPS/`
-
-در زمان گرفتن خروجی JSON یا ZIP، علاوه بر نسخه داخلی، می‌توان محل دیگری را نیز از پنجره انتخاب فایل گوشی تعیین کرد.
-
-## ساخت APK با GitHub Actions
-Workflow در مسیر `.github/workflows/build-apk.yml` قرار دارد. با push کردن تغییرات به شاخه `main` یا اجرای دستی Workflow از تب Actions، فایل APK ساخته و به‌عنوان Artifact با نام `company-camera-debug-apk` منتشر می‌شود.
-
-> این پروژه باید پس از هر تغییر روی دستگاه واقعی آزمایش شود. فایل ساخته‌شده از نوع Debug است.
+> قبل از انتشار سازمانی، پروژه باید در GitHub Actions ساخته و روی دستگاه واقعی آزمایش شود. این بسته هنوز به‌عنوان APK نهایی تست میدانی نشده است.
