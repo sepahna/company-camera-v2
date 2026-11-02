@@ -1,24 +1,23 @@
-# Company Camera – Commercial Compose Edition
+# Company Camera — نسخه تجاری Compose
 
-نسخه بازطراحی‌شده با Kotlin، Jetpack Compose، Material 3 و معماری MVVM.
+این بسته سورس کامل پروژه است. ساختار فعلی Room و جدول `photos` و شناسه بسته `ir.mbarani.companycamera` حفظ شده تا نصب نسخه جدید روی نسخه قبلی و دسترسی به دیتابیس قبلی امکان‌پذیر بماند.
 
-## امکانات حفظ‌شده
-- ثبت عکس با CameraX و انتخاب دسته ماشین‌آلات/نفرات
-- ذخیره فایل‌ها در PHOTOS/MACHINERY و PHOTOS/PERSONNEL
-- ثبت نام و توضیحات عکس
-- آرشیو با نمایش نام فایل و آیکون مشاهده؛ تصویر اصلی فقط هنگام بازکردن خوانده می‌شود
-- جست‌وجوی نام فایل
-- خروجی و بازیابی JSON و ZIP
-- راهنمای مسیرهای ذخیره‌سازی
+## ساخت APK با GitHub Actions
+1. فایل ZIP را استخراج کنید.
+2. وارد پوشه `CompanyCameraAndroid` شوید.
+3. تمام محتویات داخل این پوشه (از جمله پوشه مخفی `.github`) را در ریشه مخزن `company-camera-v2` بارگذاری و فایل‌های قبلی را جایگزین کنید.
+4. Commit کنید؛ Workflow با تغییر فایل‌های `app/` اجرا می‌شود.
+5. پس از سبز شدن Build، از بخش Artifacts فایل `company-camera-debug-apk` را دریافت کنید.
 
-## معماری
-- UI: Jetpack Compose + Material 3
-- State: AndroidX ViewModel + StateFlow
-- Data: Room DAO + Repository
-- Camera: CameraX
-- Image viewer: Coil
+## نکات
+- حداقل Android: API 26
+- Compile/Target SDK: 35
+- Java: 17
+- Gradle: 8.9
+- رابط کاربری: Jetpack Compose و Material 3
+- الگوی داده: ViewModel + Repository + Room + StateFlow
+- آرشیو در حالت فهرست، Bitmap تصویرها را بارگذاری نمی‌کند؛ تصویر با لمس ردیف باز می‌شود.
+- مسیر ذخیره عکس‌ها همان مسیر خصوصی اپ در `Android/data/ir.mbarani.companycamera/files/Pictures/CompanyCamera/` است.
 
-## ساخت APK
-Workflow در `.github/workflows/build-apk.yml` با GitHub Actions قابل اجراست.
-
-> قبل از انتشار سازمانی، پروژه باید در GitHub Actions ساخته و روی دستگاه واقعی آزمایش شود. این بسته هنوز به‌عنوان APK نهایی تست میدانی نشده است.
+## وضعیت اعتبارسنجی
+این بسته از روی سورس موجود بازسازی و خطای ساختار LazyColumn در MainActivity برطرف شده است. در این محیط Android SDK/Gradle اجرایی برای تأیید نهایی APK در دسترس نیست؛ بنابراین تأیید قطعی فقط پس از اجرای GitHub Actions انجام می‌شود.

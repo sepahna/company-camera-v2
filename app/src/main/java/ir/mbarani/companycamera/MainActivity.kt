@@ -77,16 +77,474 @@ class MainActivity : ComponentActivity() {
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable private fun CompanyCameraApp(vm:CompanyCameraViewModel,onPreviewReady:(PreviewView)->Unit,onCapture:(String)->Unit,onFlip:()->Unit,onBackupJson:()->Unit,onBackupZip:()->Unit,onRestoreJson:()->Unit,onRestoreZip:()->Unit,onHelp:()->Unit){
- val photos by vm.photos.collectAsState();val category by vm.category.collectAsState();val query by vm.query.collectAsState();var description by remember{mutableStateOf("")};var selected by remember{mutableStateOf<Photo?>(null)};var showSettings by remember{mutableStateOf(false)}
- MaterialTheme(colorScheme=lightColorScheme(primary=Blue,onPrimary=Color.White,secondary=Navy,background=SurfaceSoft,surface=Color.White)){Scaffold(containerColor=SurfaceSoft,topBar={TopAppBar(title={Column{Text("COMPANY CAMERA",fontWeight=FontWeight.Bold,letterSpacing=1.sp);Text("سامانه ثبت و آرشیو تصاویر کاری",style=MaterialTheme.typography.labelSmall,color=Color.Gray)}},actions={IconButton(onClick={showSettings=true}){Icon(Icons.Default.Settings,"تنظیمات")}},colors=TopAppBarDefaults.topAppBarColors(containerColor=Color.White))}){padding->LazyColumn(Modifier.fillMaxSize().padding(padding).padding(horizontal=16.dp),verticalArrangement=Arrangement.spacedBy(14.dp),contentPadding=PaddingValues(top=14.dp,bottom=28.dp)){
- item {Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){StatCard("کل تصاویر",photos.size.toString(),Icons.Default.PhotoLibrary,Modifier.weight(1f));StatCard("ماشین‌آلات",photos.count{it.project=="MACHINERY"}.toString(),Icons.Default.Build,Modifier.weight(1f));StatCard("نفرات",photos.count{it.project=="PERSONNEL"}.toString(),Icons.Default.Groups,Modifier.weight(1f))}}
- item {Card(shape=RoundedCornerShape(22.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){Column(Modifier.padding(14.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){Row(verticalAlignment=Alignment.CenterVertically){Text("ثبت تصویر جدید",style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.Bold);Spacer(Modifier.weight(1f));Icon(Icons.Default.CameraAlt,null,tint=Blue)};SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()){listOf("MACHINERY" to "ماشین‌آلات","PERSONNEL" to "نفرات").forEachIndexed{idx,p->SegmentedButton(selected=category==p.first,onClick={vm.setCategory(p.first)},shape=SegmentedButtonDefaults.itemShape(idx,2)){Text(p.second)}}};AndroidView(factory={ctx->PreviewView(ctx).also{it.scaleType=PreviewView.ScaleType.FILL_CENTER; onPreviewReady(it)}},modifier=Modifier.fillMaxWidth().height(190.dp).background(Color(0xFFE8EEF6),RoundedCornerShape(16.dp)),update={ /* assigned below through activity view binding */ });OutlinedTextField(value=description,onValueChange={description=it},modifier=Modifier.fillMaxWidth(),label={Text("توضیحات عکس (اختیاری)")},singleLine=true);Row(horizontalArrangement=Arrangement.spacedBy(10.dp)){OutlinedButton(onClick=onFlip,modifier=Modifier.weight(1f)){Icon(Icons.Default.Cameraswitch,null);Spacer(Modifier.width(6.dp));Text("تعویض دوربین")};Button(onClick={onCapture(description);description=""},modifier=Modifier.weight(1f)){Icon(Icons.Default.PhotoCamera,null);Spacer(Modifier.width(6.dp));Text("ثبت عکس")}}}}
- item {Column(verticalArrangement=Arrangement.spacedBy(8.dp)){Row(verticalAlignment=Alignment.CenterVertically){Text("آرشیو تصاویر",style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold);Spacer(Modifier.weight(1f));Text("${photos.size} فایل",color=Color.Gray,style=MaterialTheme.typography.labelMedium)};OutlinedTextField(value=query,onValueChange=vm::setQuery,modifier=Modifier.fillMaxWidth(),placeholder={Text("جست‌وجوی نام فایل؛ مثلاً 2254")},leadingIcon={Icon(Icons.Default.Search,null)},singleLine=true)}}
- val shown=photos.filter{query.isBlank()||it.fileName.contains(query,true)}
- if(shown.isEmpty()) item {Card(colors=CardDefaults.cardColors(containerColor=Color.White),shape=RoundedCornerShape(18.dp)){Column(Modifier.fillMaxWidth().padding(24.dp),horizontalAlignment=Alignment.CenterHorizontally){Icon(Icons.Default.FolderOpen,null,tint=Color.Gray,modifier=Modifier.size(38.dp));Text("هنوز عکسی ثبت نشده است",fontWeight=FontWeight.Medium);Text("عکس‌های ثبت‌شده در این قسمت نمایش داده می‌شوند.",color=Color.Gray,style=MaterialTheme.typography.bodySmall)}}}
- items(shown,key={it.id}){p->Card(Modifier.fillMaxWidth().clickable{selected=p},shape=RoundedCornerShape(16.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){Row(Modifier.padding(14.dp),verticalAlignment=Alignment.CenterVertically){Surface(shape=RoundedCornerShape(12.dp),color=Color(0xFFEAF1FF),modifier=Modifier.size(48.dp)){Box(contentAlignment=Alignment.Center){Icon(Icons.Default.Visibility,"مشاهده عکس",tint=Blue,modifier=Modifier.size(25.dp))}};Spacer(Modifier.width(12.dp));Column(Modifier.weight(1f)){Text(p.fileName,fontWeight=FontWeight.SemiBold);Text(if(p.project=="PERSONNEL")"نفرات" else "ماشین‌آلات",color=Color.Gray,style=MaterialTheme.typography.labelSmall)};Icon(Icons.Default.ChevronLeft,null,tint=Color.Gray)}}}
- item {Card(shape=RoundedCornerShape(20.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){Text("پشتیبان‌گیری و بازیابی",style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.Bold);Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedButton(onClick=onBackupJson,modifier=Modifier.weight(1f)){Text("خروجی JSON")};Button(onClick=onBackupZip,modifier=Modifier.weight(1f)){Text("خروجی ZIP")}};Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedButton(onClick=onRestoreJson,modifier=Modifier.weight(1f)){Text("بازیابی JSON")};OutlinedButton(onClick=onRestoreZip,modifier=Modifier.weight(1f)){Text("بازیابی ZIP")}};TextButton(onClick=onHelp){Icon(Icons.Default.Info,null);Spacer(Modifier.width(6.dp));Text("راهنما و مسیر ذخیره‌سازی")}}}}
- }};selected?.let{p->AlertDialog(onDismissRequest={selected=null},title={Text(p.fileName)},text={Column(verticalArrangement=Arrangement.spacedBy(8.dp)){val file=java.io.File(p.relativePath);if(file.exists())AsyncImage(model=file,contentDescription=p.fileName,modifier=Modifier.fillMaxWidth().heightIn(max=420.dp));Text(if(p.project=="PERSONNEL")"نفرات" else "ماشین‌آلات",color=Color.Gray)}},confirmButton={TextButton(onClick={selected=null}){Text("بستن")}})};if(showSettings)AlertDialog(onDismissRequest={showSettings=false},title={Text("تنظیمات")},text={Text("Company Camera · نسخه سازمانی\nطراحی Material 3 · ذخیره‌سازی محلی و آفلاین")},confirmButton={TextButton(onClick={showSettings=false}){Text("بستن")}})} }
+@Composable
+private fun CompanyCameraApp(
+    vm: CompanyCameraViewModel,
+    onPreviewReady: (PreviewView) -> Unit,
+    onCapture: (String) -> Unit,
+    onFlip: () -> Unit,
+    onBackupJson: () -> Unit,
+    onBackupZip: () -> Unit,
+    onRestoreJson: () -> Unit,
+    onRestoreZip: () -> Unit,
+    onHelp: () -> Unit
+) {
+    val photos by vm.photos.collectAsState()
+    val category by vm.category.collectAsState()
+    val query by vm.query.collectAsState()
+    var description by remember { mutableStateOf("") }
+    var selectedPhoto by remember { mutableStateOf<Photo?>(null) }
+    var showSettings by remember { mutableStateOf(false) }
+
+    MaterialTheme(
+        colorScheme = lightColorScheme(
+            primary = Blue,
+            onPrimary = Color.White,
+            secondary = Navy,
+            background = SurfaceSoft,
+            surface = Color.White
+        )
+    ) {
+        Scaffold(
+            containerColor = SurfaceSoft,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Column {
+                            Text(
+                                text = "COMPANY CAMERA",
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.sp
+                            )
+                            Text(
+                                text = "سامانه ثبت و آرشیو تصاویر کاری",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Gray
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { showSettings = true }) {
+                            Icon(Icons.Default.Settings, contentDescription = "تنظیمات")
+                        }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = Color.White
+                    )
+                )
+            }
+        ) { innerPadding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+                contentPadding = PaddingValues(top = 14.dp, bottom = 28.dp)
+            ) {
+                item(key = "stats") {
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        StatCard(
+                            label = "کل تصاویر",
+                            value = photos.size.toString(),
+                            icon = Icons.Default.PhotoLibrary,
+                            modifier = Modifier.weight(1f)
+                        )
+                        StatCard(
+                            label = "ماشین‌آلات",
+                            value = photos.count { it.project == "MACHINERY" }.toString(),
+                            icon = Icons.Default.Build,
+                            modifier = Modifier.weight(1f)
+                        )
+                        StatCard(
+                            label = "نفرات",
+                            value = photos.count { it.project == "PERSONNEL" }.toString(),
+                            icon = Icons.Default.Groups,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                item(key = "camera") {
+                    CameraCaptureCard(
+                        category = category,
+                        description = description,
+                        onCategoryChange = vm::setCategory,
+                        onDescriptionChange = { description = it },
+                        onPreviewReady = onPreviewReady,
+                        onFlip = onFlip,
+                        onCapture = {
+                            onCapture(description)
+                            description = ""
+                        }
+                    )
+                }
+
+                item(key = "archive-header") {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "آرشیو تصاویر",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Text(
+                                text = "${photos.size} فایل",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                        OutlinedTextField(
+                            value = query,
+                            onValueChange = vm::setQuery,
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("جست‌وجوی نام فایل؛ مثلاً 2254") },
+                            leadingIcon = {
+                                Icon(Icons.Default.Search, contentDescription = "جست‌وجو")
+                            },
+                            singleLine = true
+                        )
+                    }
+                }
+
+                val filteredPhotos = photos.filter { photo ->
+                    query.isBlank() || photo.fileName.contains(query, ignoreCase = true)
+                }
+
+                if (filteredPhotos.isEmpty()) {
+                    item(key = "empty-archive") {
+                        EmptyArchiveCard()
+                    }
+                } else {
+                    items(
+                        items = filteredPhotos,
+                        key = { photo -> photo.id }
+                    ) { photo ->
+                        PhotoArchiveRow(
+                            photo = photo,
+                            onClick = { selectedPhoto = photo }
+                        )
+                    }
+                }
+
+                item(key = "backup") {
+                    BackupCard(
+                        onBackupJson = onBackupJson,
+                        onBackupZip = onBackupZip,
+                        onRestoreJson = onRestoreJson,
+                        onRestoreZip = onRestoreZip,
+                        onHelp = onHelp
+                    )
+                }
+            }
+        }
+
+        selectedPhoto?.let { photo ->
+            PhotoPreviewDialog(
+                photo = photo,
+                onDismiss = { selectedPhoto = null }
+            )
+        }
+
+        if (showSettings) {
+            AlertDialog(
+                onDismissRequest = { showSettings = false },
+                title = { Text("تنظیمات") },
+                text = {
+                    Text(
+                        "Company Camera · نسخه سازمانی\n" +
+                            "طراحی Material 3 · ذخیره‌سازی محلی و آفلاین"
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { showSettings = false }) {
+                        Text("بستن")
+                    }
+                }
+            )
+        }
+    }
 }
-@Composable private fun StatCard(label:String,value:String,icon:androidx.compose.ui.graphics.vector.ImageVector,modifier:Modifier=Modifier){Card(modifier,shape=RoundedCornerShape(16.dp),colors=CardDefaults.cardColors(containerColor=Color.White)){Column(Modifier.padding(12.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){Icon(icon,null,tint=Blue);Text(value,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold);Text(label,style=MaterialTheme.typography.labelSmall,color=Color.Gray)}}}
+
+@Composable
+private fun CameraCaptureCard(
+    category: String,
+    description: String,
+    onCategoryChange: (String) -> Unit,
+    onDescriptionChange: (String) -> Unit,
+    onPreviewReady: (PreviewView) -> Unit,
+    onFlip: () -> Unit,
+    onCapture: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "ثبت تصویر جدید",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.weight(1f))
+                Icon(Icons.Default.CameraAlt, contentDescription = null, tint = Blue)
+            }
+
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                val options = listOf(
+                    "MACHINERY" to "ماشین‌آلات",
+                    "PERSONNEL" to "نفرات"
+                )
+                options.forEachIndexed { index, option ->
+                    SegmentedButton(
+                        selected = category == option.first,
+                        onClick = { onCategoryChange(option.first) },
+                        shape = SegmentedButtonDefaults.itemShape(index, options.size)
+                    ) {
+                        Text(option.second)
+                    }
+                }
+            }
+
+            AndroidView(
+                factory = { context ->
+                    PreviewView(context).also { view ->
+                        view.scaleType = PreviewView.ScaleType.FILL_CENTER
+                        onPreviewReady(view)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(190.dp)
+                    .background(Color(0xFFE8EEF6), RoundedCornerShape(16.dp))
+            )
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = onDescriptionChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("توضیحات عکس (اختیاری)") },
+                singleLine = true
+            )
+
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                OutlinedButton(
+                    onClick = onFlip,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.Cameraswitch, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("تعویض دوربین")
+                }
+                Button(
+                    onClick = onCapture,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(Icons.Default.PhotoCamera, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("ثبت عکس")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyArchiveCard() {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(
+                Icons.Default.FolderOpen,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.size(38.dp)
+            )
+            Text("تصویری پیدا نشد", fontWeight = FontWeight.Medium)
+            Text(
+                "با ثبت عکس یا تغییر عبارت جست‌وجو دوباره امتحان کنید.",
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
+private fun PhotoArchiveRow(
+    photo: Photo,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFEAF1FF),
+                modifier = Modifier.size(48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        Icons.Default.Visibility,
+                        contentDescription = "مشاهده عکس",
+                        tint = Blue,
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(photo.fileName, fontWeight = FontWeight.SemiBold)
+                Text(
+                    if (photo.project == "PERSONNEL") "نفرات" else "ماشین‌آلات",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
+            Icon(
+                Icons.Default.ChevronLeft,
+                contentDescription = null,
+                tint = Color.Gray
+            )
+        }
+    }
+}
+
+@Composable
+private fun BackupCard(
+    onBackupJson: () -> Unit,
+    onBackupZip: () -> Unit,
+    onRestoreJson: () -> Unit,
+    onRestoreZip: () -> Unit,
+    onHelp: () -> Unit
+) {
+    Card(
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                "پشتیبان‌گیری و بازیابی",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = onBackupJson,
+                    modifier = Modifier.weight(1f)
+                ) { Text("خروجی JSON") }
+                Button(
+                    onClick = onBackupZip,
+                    modifier = Modifier.weight(1f)
+                ) { Text("خروجی ZIP") }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedButton(
+                    onClick = onRestoreJson,
+                    modifier = Modifier.weight(1f)
+                ) { Text("بازیابی JSON") }
+                OutlinedButton(
+                    onClick = onRestoreZip,
+                    modifier = Modifier.weight(1f)
+                ) { Text("بازیابی ZIP") }
+            }
+            TextButton(onClick = onHelp) {
+                Icon(Icons.Default.Info, contentDescription = null)
+                Spacer(Modifier.width(6.dp))
+                Text("راهنما و مسیر ذخیره‌سازی")
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhotoPreviewDialog(
+    photo: Photo,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(photo.fileName) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val imageFile = remember(photo.relativePath) { File(photo.relativePath) }
+                if (imageFile.exists()) {
+                    AsyncImage(
+                        model = imageFile,
+                        contentDescription = photo.fileName,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(max = 420.dp)
+                    )
+                } else {
+                    Text("فایل تصویر در مسیر ذخیره‌شده پیدا نشد.")
+                }
+                Text(
+                    if (photo.project == "PERSONNEL") "نفرات" else "ماشین‌آلات",
+                    color = Color.Gray
+                )
+                if (photo.description.isNotBlank()) {
+                    Text(photo.description)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("بستن") }
+        }
+    )
+}
+
+@Composable
+private fun StatCard(
+    label: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Icon(icon, contentDescription = null, tint = Blue)
+            Text(
+                value,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.Gray
+            )
+        }
+    }
+}
